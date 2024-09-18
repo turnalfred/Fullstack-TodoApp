@@ -31,7 +31,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: "${{env.REGISTRY}}/${{env.IMAGE_NAME}}/backend"
+          images: "${{env.REGISTRY}}/${{env.IMAGE_NAME}}-backend"
           tags: |
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
@@ -49,7 +49,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: ./flask
-          push: true
+          push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
@@ -69,12 +69,12 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: "${{env.REGISTRY}}/${{env.IMAGE_NAME}}/frontend"
+          images: "${{env.REGISTRY}}/${{env.IMAGE_NAME}}-frontend"
           tags: |
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=sha
-            type-ref
+            type=ref
       - uses: docker/login-action@v3
         name: Login to GHCR
         with:
@@ -87,6 +87,6 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: ./react
-          push: ${{ github.event_name != 'pull-request' }}
+          push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
